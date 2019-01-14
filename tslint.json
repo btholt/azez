@@ -1,0 +1,6 @@
+{
+  "extends": ["@oclif/tslint", "tslint-config-prettier"],
+  "rules": {
+    "ordered-imports": false
+  }
+}
