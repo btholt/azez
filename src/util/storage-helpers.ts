@@ -14,12 +14,8 @@ import {
 } from "@azure/storage-blob";
 import * as promiseLimit from "promise-limit";
 import * as ProgressBar from "ascii-progress";
-import chalk from "chalk";
-import { localConfig } from "./conf";
-import generateName from "./generate-name";
 import { promisify } from "util";
-
-const GREEN_CHECK = chalk.green("✓");
+import { DONE_STRING } from "./consts";
 
 export async function createWebContainer(
   client: StorageManagementClient,
@@ -34,7 +30,7 @@ export async function createWebContainer(
       cli: "azez"
     }
   });
-  cli.action.stop(GREEN_CHECK);
+  cli.action.stop(DONE_STRING);
 }
 
 export async function setStaticSiteToPublic(serviceURL: ServiceURL) {
@@ -46,7 +42,7 @@ export async function setStaticSiteToPublic(serviceURL: ServiceURL) {
       errorDocument404Path: "index.html"
     }
   });
-  cli.action.stop(GREEN_CHECK);
+  cli.action.stop(DONE_STRING);
 }
 
 export async function createAccount(
@@ -66,26 +62,7 @@ export async function createAccount(
   );
   // const accountRes = await poller.pollUntilFinished();
   await poller.pollUntilFinished();
-  cli.action.stop(GREEN_CHECK);
-}
-
-export async function getResourceGroup() {
-  let resourceGroup = await localConfig.get("resourceGroup");
-  if (!resourceGroup) {
-    // TODO
-    resourceGroup = "brholt-playground";
-  }
-  return resourceGroup;
-}
-
-export async function getAccount() {
-  let account = await localConfig.get("account");
-  let needToCreateAccount = false;
-  if (!account) {
-    needToCreateAccount = true;
-    account = generateName();
-  }
-  return { needToCreateAccount, account };
+  cli.action.stop(DONE_STRING);
 }
 
 export async function getAccountKey(
@@ -106,7 +83,7 @@ export async function getAccountKey(
     process.exit(1);
     return "";
   }
-  cli.action.stop(GREEN_CHECK);
+  cli.action.stop(DONE_STRING);
   return accountKey.value;
 }
 
@@ -121,7 +98,7 @@ export async function uploadFilesToAzure(
     nodir: true
   });
 
-  cli.action.stop(GREEN_CHECK);
+  cli.action.stop(DONE_STRING);
 
   const bar = new ProgressBar({
     schema:
@@ -131,7 +108,7 @@ export async function uploadFilesToAzure(
 
   bar.tick(0);
 
-  await promiseLimit(5).map(files, async function(file: string) {
+  await promiseLimit(5).map(files, async function(file: any) {
     const blobURL = BlobURL.fromContainerURL(containerURL, file);
     const blockBlobURL = BlockBlobURL.fromBlobURL(blobURL);
 
@@ -157,5 +134,5 @@ export async function uploadFilesToAzure(
 
   bar.clear();
   cli.action.start("deploying static site");
-  cli.action.stop(GREEN_CHECK);
+  cli.action.stop(DONE_STRING);
 }

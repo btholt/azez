@@ -1,5 +1,4 @@
-azez
-====
+# azez
 
 Easy CLI for deploying to Microsoft Azure
 
@@ -10,11 +9,15 @@ Easy CLI for deploying to Microsoft Azure
 [![License](https://img.shields.io/npm/l/azez.svg)](https://github.com/btholt/azez/blob/master/package.json)
 
 <!-- toc -->
-* [Usage](#usage)
-* [Commands](#commands)
-<!-- tocstop -->
+
+- [Usage](#usage)
+- [Commands](#commands)
+  <!-- tocstop -->
+
 # Usage
+
 <!-- usage -->
+
 ```sh-session
 $ npm install -g azez
 $ azez COMMAND
@@ -26,46 +29,20 @@ USAGE
   $ azez COMMAND
 ...
 ```
+
 <!-- usagestop -->
+
 # Commands
+
 <!-- commands -->
-* [`azez hello [FILE]`](#azez-hello-file)
-* [`azez help [COMMAND]`](#azez-help-command)
 
-## `azez hello [FILE]`
+- [`azez hello [FILE]`](#azez-hello-file)
+- [`azez help [COMMAND]`](#azez-help-command)
 
-describe the command here
+## `azez login`
 
-```
-USAGE
-  $ azez hello [FILE]
+## `azez logout`
 
-OPTIONS
-  -f, --force
-  -h, --help       show CLI help
-  -n, --name=name  name to print
+## `azez static`
 
-EXAMPLE
-  $ azez hello
-  hello world from ./src/hello.ts!
-```
-
-_See code: [src/commands/hello.ts](https://github.com/btholt/azez/blob/v0.0.0/src/commands/hello.ts)_
-
-## `azez help [COMMAND]`
-
-display help for azez
-
-```
-USAGE
-  $ azez help [COMMAND]
-
-ARGUMENTS
-  COMMAND  command to show help for
-
-OPTIONS
-  --all  see all commands in CLI
-```
-
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v2.1.4/src/commands/help.ts)_
-<!-- commandsstop -->
+Work in progress. Unstable. Experimental.

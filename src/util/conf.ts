@@ -10,11 +10,18 @@ interface ILocalConfig {
   _cache: any;
   get(key: string): Promise<any>;
   set(key: string, value: any): Promise<any>;
+  setObject(conf: any): Promise<any>;
   getCache(): Promise<any>;
 }
 
 export const localConfig: ILocalConfig = {
   _cache: null,
+  async setObject(conf: any): Promise<any> {
+    const cache = await this.getCache();
+
+    Object.keys(conf).forEach(item => (cache[item] = conf[item]));
+    return promisify(fs.writeFile)(CONFIG_PATH, JSON.stringify(cache, null, 2));
+  },
   async set(key: string, value: any): Promise<any> {
     const cache = await this.getCache();
 

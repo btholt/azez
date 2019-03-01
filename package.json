@@ -1,13 +1,14 @@
 {
   "name": "azez",
   "description": "Easy CLI for deploying to Microsoft Azure",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "author": "Brian Holt @btholt",
   "bin": {
     "azez": "./bin/run"
   },
   "bugs": "https://github.com/btholt/azez/issues",
   "dependencies": {
+    "@azure/arm-resources": "^1.0.0",
     "@azure/arm-storage": "^7.0.0",
     "@azure/ms-rest-azure-env": "^1.1.1",
     "@azure/ms-rest-nodeauth": "^0.8.3",

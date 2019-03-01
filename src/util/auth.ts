@@ -15,7 +15,7 @@ async function chooseSubscription(
   if (Array.isArray(subs)) {
     if (subs.length === 0) {
       throw new Error(
-        "You don't have any active subscriptions. Head to https://portal.azure.com and sign in. From there you can create a new subscription and then you can come back and try again."
+        "You don't have any active subscriptions. Head to https://azure.com/free and sign in. From there you can create a new subscription and then you can come back and try again."
       );
     } else if (subs.length === 1) {
       return subs[0].id;
@@ -28,8 +28,7 @@ async function chooseSubscription(
             name: `${sub.name} – ${sub.id}`,
             value: sub.id
           })),
-          message:
-            "Under which subscription should we put this static site? (azez will default to this in the future)"
+          message: "Under which subscription should we put this static site?"
         }
       ]);
       return sub;
@@ -42,12 +41,13 @@ async function chooseSubscription(
 }
 
 export async function getCreds(
-  log: (msg: string) => void
-): Promise<[DeviceTokenCredentials, string]> {
+  log: (msg: string) => void,
+  forceLogin: boolean
+): Promise<[DeviceTokenCredentials, string?]> {
   let credentials: DeviceTokenCredentials;
   let confToken = globalConfig.get("token") as DeviceTokenCredentials | null;
-  let subscription = globalConfig.get("subscription") as string | null;
-  if (confToken && subscription) {
+  let subscription;
+  if (confToken && !forceLogin) {
     // user has previously logged on and selected a valid subscription
     const cache = new MemoryCache();
     cache.add(confToken.tokenCache._entries, () => {});
@@ -68,19 +68,19 @@ export async function getCreds(
       globalConfig.set("token", credentials);
     }
   } else {
-    // user has never logged in before
+    // user has to log in again
     const loginRes = await interactiveLoginWithAuthResponse();
     credentials = loginRes.credentials as DeviceTokenCredentials;
 
-    if (!subscription) {
-      subscription = await chooseSubscription(loginRes.subscriptions);
-    }
+    subscription = await chooseSubscription(loginRes.subscriptions);
 
     globalConfig.set("token", credentials);
-    globalConfig.set("subscription", subscription);
   }
 
   return [credentials, subscription];
 }
 
-export async function clearCreds() {}
+export async function clearCreds() {
+  globalConfig.set("token", null);
+  globalConfig.set("subscription", null);
+}

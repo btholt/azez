@@ -1,6 +1,9 @@
 import { Command, flags } from "@oclif/command";
-import { interactiveLogin } from "@azure/ms-rest-nodeauth";
-import conf from "../util/conf";
+import {
+  interactiveLogin,
+  DeviceTokenCredentials
+} from "@azure/ms-rest-nodeauth";
+import { globalConfig } from "../util/conf";
 
 export default class Login extends Command {
   static description = "deploy a new static site";
@@ -23,8 +26,8 @@ export default class Login extends Command {
     this.log("login");
 
     const creds = await interactiveLogin();
-    const token = await creds.getToken();
-    conf.set("token", token);
+    const token: DeviceTokenCredentials = creds as DeviceTokenCredentials;
+    globalConfig.set("token", token);
     this.log(JSON.stringify(token, null, 4));
   }
 }

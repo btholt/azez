@@ -2,10 +2,9 @@ import { Command, flags } from "@oclif/command";
 import { StorageManagementClient } from "@azure/arm-storage";
 import { ServiceURL, SharedKeyCredential } from "@azure/storage-blob";
 import chalk from "chalk";
+import { cli } from "cli-ux";
 import { getCreds } from "../../util/auth";
 import {
-  getAccount,
-  getResourceGroup,
   createAccount,
   getAccountKey,
   createWebContainer,
@@ -14,7 +13,8 @@ import {
 } from "../../util/storage-helpers";
 import getLogo from "../../util/msft";
 import { localConfig } from "../../util/conf";
-import { cli } from "cli-ux";
+import { getConfig, createResourceGroup } from "../../util/azure-helpers";
+import { DONE_STRING } from "../../util/consts";
 
 export default class StaticDeploy extends Command {
   static description = "deploy a static site to Azure Static Sites";
@@ -22,8 +22,27 @@ export default class StaticDeploy extends Command {
   static examples = ["$ azez static ."];
 
   static flags = {
-    help: flags.help({ char: "h" })
-    // account: flags.string({ char: "a", description: "name of the storage account to deploy to" }),
+    help: flags.help({ char: "h" }),
+    account: flags.string({
+      char: "a",
+      description: "name of the storage account to deploy to"
+    }),
+    location: flags.string({
+      char: "l",
+      description: 'location where to create storage account e.g. "West US"'
+    }),
+    subscription: flags.string({
+      char: "s",
+      description: "subscription ID under which to create new resources"
+    }),
+    resourceGroup: flags.string({
+      char: "r",
+      description: "name of the resource group to deploy to"
+    }),
+    noSave: flags.boolean({
+      char: "N",
+      description: "don't save the configuration"
+    })
     // choose: flags.boolean({ char: "c", description: "ignore cached credentials" })
   };
 
@@ -31,22 +50,40 @@ export default class StaticDeploy extends Command {
 
   async run() {
     // const {args, flags} = this.parse(StaticDeploy)
+    const { flags } = this.parse(StaticDeploy);
 
     this.log(getLogo());
     this.log();
 
-    const [credentials, subscription] = await getCreds(this.log.bind(this));
+    let {
+      location,
+      resourceGroup,
+      needToCreateAccount,
+      account,
+      subscription
+    } = await getConfig(flags);
+
+    const [credentials, retrievedSubscription] = await getCreds(
+      this.log.bind(this),
+      !subscription
+    );
+    if (retrievedSubscription) {
+      subscription = retrievedSubscription;
+    }
     const client = new StorageManagementClient(credentials, subscription);
 
-    let { needToCreateAccount, account } = await getAccount();
-
-    let resourceGroup = await getResourceGroup();
+    await createResourceGroup(
+      resourceGroup,
+      subscription,
+      credentials,
+      location
+    );
 
     if (needToCreateAccount) {
       await createAccount(account, client, resourceGroup);
     } else {
       cli.action.start(`redeploying to ${account}`);
-      cli.action.stop(chalk.green("✓"));
+      cli.action.stop(DONE_STRING);
     }
 
     const accountKey = await getAccountKey(account, client, resourceGroup);
@@ -75,10 +112,15 @@ export default class StaticDeploy extends Command {
       )}`
     );
 
-    if (needToCreateAccount) {
+    if (!flags.noSave) {
       cli.action.start("saving config to .azez.json");
-      await localConfig.set("account", account);
-      cli.action.stop(chalk.green("✓"));
+      await localConfig.setObject({
+        location,
+        resourceGroup,
+        subscription,
+        account
+      });
+      cli.action.stop(DONE_STRING);
     }
   }
 }
